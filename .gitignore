@@ -1,0 +1,124 @@
+# Editor and OS metadata
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# C/C++ and Visual Studio build output
+**/build/
+**/bin/
+**/obj/
+*.o
+*.obj
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.iobj
+*.ipdb
+*.tlog
+
+# Local configuration and secrets
+.env
+*.local.env
+reverse/**/*.env
+
+# IDA generated sidecars and local MCP state
+*.id0
+*.id1
+*.nam
+*.til
+.ida-mcp/
+
+# DOSBox and reverse-engineering run artifacts
+save/
+dosbox-x/
+ida-pro-mcp/
+**/agent-runs/
+**/slice-runs/
+**/*runtime*/
+*.log
+*.tmp
+*.sav
+
+# Build inputs required by the native and Pages CI builds despite the *.sav /
+# *.tmp rules above: the initial save image and the game's sprite temp file.
+!/FD2.SAV
+!/fd2re/FD2.TMP
+
+# Large generated analysis exports
+tmp_*.json
+
+# One-off analysis scratch (IDA/decompiler dumps, drive scripts, build smoke logs)
+tmp_*.py
+*_tmp.json
+*_tmp*.txt
+ida_tmp*.txt
+/d[0-9a-f][0-9a-f]*.json
+smoke_err.txt
+tools/states_gen_out.c
+
+# Round-74/76 event-audit scratch (mcp_call dumps, disassembly JSONs)
+work_tmp/
+
+# Local reverse-engineering scratch (not source or reproducible tools)
+/.zcode/
+/tools/_dis_*.txt
+/tools/_out*.jsonl
+/tools/idalib_local.py
+/fd2re/tools/preview.*.png
+
+# Vendored libADLMIDI build output (source tree is tracked, built libs are not)
+**/vendor/libADLMIDI/build-msvc/
+
+# fd2dat generated data — regenerable from repo-root originals via
+# tools/dat_export.py + dat_pack.py (re-exported wholesale on every tool fix)
+/fd2re/tools/dat-modern/
+/fd2re/tools/preview/
+
+# Policy: the public repository carries the reconstruction only (fd2re + web).
+# The reverse-engineering workspace and verbatim original install files stay
+# local — analysis scripts and evidence notes, the IDA database, the original
+# game executables and Miles AIL drivers/configs are not distributed.
+/FD2.EXE.i64
+/reverse/
+/tools/
+/runtest/
+/agents.md
+/fd2.conf
+/run_fd2.bat
+/*.MDI
+/*.DIG
+/*.DAT
+/FDICON.B24
+/SAMPLE.AD
+/SAMPLE.BNK
+/SAMPLE.OPL
+/AILDRVR.LST
+/DIG.INI
+/MDI.INI
+/fd2re/*.MDI
+/fd2re/*.DIG
+/fd2re/SAMPLE.AD
+/fd2re/SAMPLE.BNK
+/fd2re/SAMPLE.OPL
+/fd2re/DIG.INI
+/fd2re/MDI.INI
+/fd2re/TITLE.DAT
+/fd2re/docs/architecture.md
+/fd2re/docs/fd2sav-editing.md
+
+# Generated web build output (Web sources live under web/; only artifacts are ignored)
+/web/dist/
+/web/build-pages/
+
+# Independent embedded git repository (C++ refactor with its own history)
+/fd2cpp/

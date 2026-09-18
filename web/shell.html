@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>fd2re</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+#canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;outline:0}
+#overlay{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;background:rgba(0,0,0,.88);color:#9ad;font:16px/1.7 system-ui,monospace;cursor:pointer;z-index:2;user-select:none}
+#overlay.ready{background:rgba(16,26,36,.92)}
+#overlay .big{font-size:30px;letter-spacing:.35em;text-indent:.35em}
+#overlay .dim{color:#567;font-size:12px}
+#log{position:absolute;left:4px;bottom:4px;max-width:90%;max-height:30%;overflow:hidden;color:#7a7;font:11px/1.4 monospace;white-space:pre-wrap;z-index:3;pointer-events:none;opacity:.85}
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="0"></canvas>
+<div id="overlay"><div class="big">F D 2</div><div id="ovtext">Loading...</div><div class="dim">fd2re WASM build</div></div>
+<div id="log"></div>
+<script>
+(function(){
+  var log=document.getElementById('log');
+  function put(tag,args){try{log.textContent=(log.textContent+'\n'+tag+' '+Array.prototype.map.call(args,String).join(' ')).split('\n').slice(-16).join('\n')}catch(e){}}
+  addEventListener('error',function(e){put('[error]',[e.message,e.filename,e.lineno])});
+  addEventListener('unhandledrejection',function(e){put('[reject]',[e.reason])});
+  ['error','warn'].forEach(function(k){var old=console[k].bind(console);console[k]=function(){put('['+k+']',arguments);old.apply(null,arguments)}});
+}());
+var Module={
+  canvas:document.getElementById('canvas'),
+  print:function(t){console.log(t)},
+  printErr:function(t){console.error(t)},
+  onRuntimeInitialized:function(){
+    initPersistence(function(){
+      var ov=document.getElementById('overlay');
+      document.getElementById('ovtext').textContent='Click to start';
+      ov.classList.add('ready'); ov.addEventListener('click',start);
+      addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')start()});
+    });
+  }
+};
+var fd2PersistentNames=['FD2.SAV','FD2.TMP'];
+function initPersistence(done){
+  var fs=Module.FS;
+  if(!fs||!fs.filesystems||!fs.filesystems.IDBFS){done();return}
+  try{fs.mkdir('/persistent')}catch(e){}
+  try{fs.mount(fs.filesystems.IDBFS,{autoPersist:true},'/persistent')}catch(e){console.warn('IDBFS mount',e);done();return}
+  fs.syncfs(true,function(err){
+    if(err)console.warn('IDBFS load',err);
+    fd2PersistentNames.forEach(function(name){
+      try{
+        var source='/persistent/'+name;
+        if(fs.analyzePath(source).exists)fs.writeFile('/'+name,fs.readFile(source));
+      }catch(e){console.warn('IDBFS restore '+name,e)}
+    });
+    persistFiles(); done();
+  });
+}
+function persistFiles(){
+  var fs=Module.FS;
+  if(!fs||!fs.filesystems||!fs.filesystems.IDBFS)return;
+  fd2PersistentNames.forEach(function(name){
+    try{
+      var source='/'+name;
+      if(fs.analyzePath(source).exists)fs.writeFile('/persistent/'+name,fs.readFile(source));
+    }catch(e){console.warn('IDBFS snapshot '+name,e)}
+  });
+  fs.syncfs(false,function(err){if(err)console.warn('IDBFS save',err)});
+}
+setInterval(persistFiles,2000);
+addEventListener('beforeunload',persistFiles);
+function start(){
+  var ov=document.getElementById('overlay');
+  if(!ov.classList.contains('ready')||ov.style.display==='none')return;
+  ov.style.display='none'; Module.canvas.focus();
+  try{
+    if(typeof Module.callMain==='function')Module.callMain([]);else Module._main(0,0);
+  }catch(e){console.error(e)}
+}
+addEventListener('keydown',function(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].indexOf(e.key)>=0||/^F([1-9]|1[0-2])$/.test(e.key))e.preventDefault()},true);
+Module.canvas.addEventListener('mousedown',function(){Module.canvas.focus()});
+Module.canvas.addEventListener('dblclick',function(){if(document.fullscreenElement)document.exitFullscreen();else if(Module.canvas.requestFullscreen)Module.canvas.requestFullscreen()});
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

@@ -1,0 +1,63 @@
+name: Build Web and Deploy Pages
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "fd2re/src/**"
+      - "fd2re/include/**"
+      - "fd2re/vendor/libADLMIDI/**"
+      - "fd2re/*.DAT"
+      - "fd2re/*.B24"
+      - "fd2re/*.TMP"
+      - "fd2re/*.wopl"
+      - "FD2.SAV"
+      - "web/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Configure Web build
+        run: emcmake cmake -S web -B web/build-pages -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build WebAssembly package
+        run: cmake --build web/build-pages --target fd2re --parallel 2
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/build-pages/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

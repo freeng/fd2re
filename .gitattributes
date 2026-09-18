@@ -1,0 +1,16 @@
+# Keep source and analysis text stable across Windows and Unix checkouts.
+* text=auto eol=lf
+
+# Binary game assets and analysis database.
+*.ad binary
+*.b24 binary
+*.bnk binary
+*.dat binary
+*.dig binary
+*.exe binary
+*.i64 binary
+*.mdi binary
+*.obj binary
+*.sav binary
+*.tmp binary
+*.opl binary
